@@ -1,28 +1,11 @@
-# coding=utf-8
-import argparse
-import os
-
-# selenium
-from io import BytesIO
-
-from imageio.core import Image
 from selenium import webdriver
-from time import sleep
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.by import By
-from screenshot import Screenshot_Clipping
+from PIL import Image
+from io import BytesIO
+import time
+import os
+import argparse
+import shutil
 
-# logging
-from logging import getLogger, StreamHandler, DEBUG
-logger = getLogger(__name__)
-handler = StreamHandler()
-handler.setLevel(DEBUG)
-handler.setLevel(DEBUG)
-logger.addHandler(handler)
-logger.propagate = False
 
 # parse arguments
 # first argument should be first site
@@ -35,47 +18,80 @@ parser.add_argument('arg3', help='second site')
 args = parser.parse_args()
 
 
-def process():
-    print('processing')
-    print(args.arg1)
-    print(args.arg2)
-    print(args.arg3)
+def fullpage_screenshot(driver, file, scroll_delay=0.3):
+    device_pixel_ratio = driver.execute_script('return window.devicePixelRatio')
+
+    total_height = driver.execute_script('return document.body.parentNode.scrollHeight')
+    viewport_height = driver.execute_script('return window.innerHeight')
+    total_width = driver.execute_script('return document.body.offsetWidth')
+    viewport_width = driver.execute_script("return document.body.clientWidth")
+
+    assert(viewport_width == total_width)
+
+    # scroll the page, take screenshots and save screenshots to slices
+    offset = 0
+    slices = {}
+    while offset < total_height:
+        if offset + viewport_height > total_height:
+            offset = total_height - viewport_height
+
+        driver.execute_script('window.scrollTo({0}, {1})'.format(0, offset))
+        time.sleep(scroll_delay)
+
+        img = Image.open(BytesIO(driver.get_screenshot_as_png()))
+        slices[offset] = img
+
+        offset = offset + viewport_height
+
+    # combine image slices
+    stitched_image = Image.new('RGB', (total_width * device_pixel_ratio, total_height * device_pixel_ratio))
+    for offset, image in slices.items():
+        stitched_image.paste(image, (0, offset * device_pixel_ratio))
+    stitched_image.save(file)
 
 
-def take_screenshot():
+def get_screenshot_from_url(URL, FILENAME):
     options = webdriver.ChromeOptions()
-
-    # for mobile site
-    mobile_emulation = { "deviceName": "iPhone X" }
-    # options.add_experimental_option("mobileEmulation", mobile_emulation)
+    mobile_emulation = {"deviceName": "iPhone X"}
     options.headless = True
-
-    ob = Screenshot_Clipping.Screenshot()
-    driver = webdriver.Chrome(executable_path=os.path.join(os.getcwd(), 'chromedriver'), options=options)
-
-    url = "https://sp.subaru.jp"
-
-    driver.get(url)
-
-    try:
-        w = WebDriverWait(driver, 8)
-        w.until(expected_conditions.presence_of_element_located((By.TAG_NAME, "body")))
-        S = lambda X: driver.execute_script('return document.body.parentNode.scroll' + X)
-        driver.set_window_size(S('Width'), S('Height'))  # may need manual adjustment
-        img_url = ob.full_Screenshot(driver, save_path=r'.', image_name='google.png')
-        print(img_url)
-        # p = driver.get_window_size()
-        # print(p['width'], p['height'])
-        # driver.find_element_by_tag_name('body').screenshot('web_screenshot.png')
-        # driver.save_screenshot('test.png')
-    except TimeoutException:
-        print("Timeout page load too long")
-
-    # driver.close()
-
-    driver.quit()
+    options.add_experimental_option("mobileEmulation", mobile_emulation)
+    options.add_argument('--ignore-certificate-errors')
+    options.add_argument("--test-type")
+    with webdriver.Chrome(executable_path=os.path.join(os.getcwd(), 'chromedriver'), options=options) as driver:
+        print("Processing screenshot: " + URL)
+        driver.get(URL)
+        fullpage_screenshot(driver, FILENAME)
+        driver.quit()
 
 
-if __name__ == "__main__":
-    take_screenshot()
-    # print(os.path.join(os.getcwd(), 'chromedriver.exe'))
+def process():
+    # read path file
+    path = args.arg1
+    site1 = args.arg2
+    site2 = args.arg3
+
+    output = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
+    site1dir = os.path.join(output, site1)
+    site2dir = os.path.join(output, site2)
+
+    # delete old data
+    shutil.rmtree(site1dir)
+    shutil.rmtree(site2dir)
+
+    # create output directory
+    os.makedirs(site1dir)
+    os.makedirs(site2dir)
+
+    lines = tuple(open(path, "r"))
+
+    for x in lines:
+        desire_path = x.replace("\n", "")
+        filename = desire_path.replace("/", "_") + ".png"
+
+        get_screenshot_from_url("https://" + site1 + desire_path, os.path.join(site1dir, filename))
+        get_screenshot_from_url("https://" + site2 + desire_path, os.path.join(site2dir, filename))
+
+
+if __name__ == '__main__':
+    # get_screenshot_from_url('https://sp.subaru.jp.internal', 'screenshot1.png')
+    process()
