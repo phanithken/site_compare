@@ -3,6 +3,8 @@ little tiny piece of code to compare two site by determining the screenshot of e
 
 # Usage
 
+download `chromedriver` from https://chromedriver.chromium.org/getting-started and place it in `os.path.getcwd()`
+
 ```bash
 $ python site_compare.py -p path.txt site-1.com site-2.com
 ```
