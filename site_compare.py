@@ -3,6 +3,7 @@ from PIL import Image
 from io import BytesIO
 from skimage.metrics import structural_similarity
 from logging import getLogger, StreamHandler, DEBUG
+from utils import append_to_file
 
 import cv2
 import time
@@ -39,6 +40,8 @@ def fullpage_screenshot(driver, file, scroll_delay=0.3):
     viewport_width = driver.execute_script("return document.body.clientWidth")
 
     assert(viewport_width == total_width)
+
+    # TO-DO: handle assert error, in case of 404 or anything sort of that
 
     # scroll the page, take screenshots and save screenshots to slices
     offset = 0
@@ -130,6 +133,12 @@ def compare_image(img1, img2):
     cv2.imwrite(os.path.join(os.path.join(os.path.dirname(img2), "output"), os.path.basename(img2)), image2)
     cv2.waitKey(0)
 
+    path1 = os.path.splitext(os.path.basename(img1))[0].replace("_", "/")
+    path2 = os.path.splitext(os.path.basename(img2))[0].replace("_", "/")
+
+    # TO-DO: normalize
+    return "https://" + args.arg2 + path1 + ', ' "https://" + args.arg3 + path2 + ', ' + "Similarity: {0}%".format(percent)
+
 def process():
     # read path file
     path = args.arg1
@@ -159,7 +168,13 @@ def process():
         get_screenshot_from_url("https://" + site2 + desire_path, os.path.join(site2dir, filename))
 
         # generate comparision of the screenshot
-        compare_image(os.path.join(site1dir, filename), os.path.join(site2dir, filename))
+        msg = compare_image(os.path.join(site1dir, filename), os.path.join(site2dir, filename))
+
+        # add similarity to result
+        result = os.path.basename("result.txt")
+        if not os.path.exists(result): open(result, "w")
+        append_to_file(result, msg)
+        print(msg)
 
 
 if __name__ == '__main__':
