@@ -10,7 +10,6 @@ import os
 import sys
 import argparse
 import shutil
-import imutils
 
 # logging
 logger = getLogger(__name__)
@@ -101,7 +100,7 @@ def compare_image(img1, img2):
         logger.debug("ValueError: ({0})".format(e))
         return 0
     except:
-        logger.debug("Unexpected error")
+        logger.debug("Unexpected error: " + str(sys.exc_info()[0]))
         return 0
 
     # mark differences
@@ -127,8 +126,6 @@ def compare_image(img1, img2):
     if not os.path.exists(os.path.join(os.path.dirname(img2), "output")): os.makedirs(os.path.join(os.path.dirname(img2), "output"))
 
     # write output to dir
-    print(os.path.basename(img1))
-    print(os.path.basename(img2))
     cv2.imwrite(os.path.join(os.path.join(os.path.dirname(img1), "output"), os.path.basename(img1)), image1)
     cv2.imwrite(os.path.join(os.path.join(os.path.dirname(img2), "output"), os.path.basename(img2)), image2)
     cv2.waitKey(0)
@@ -166,5 +163,4 @@ def process():
 
 
 if __name__ == '__main__':
-    # get_screenshot_from_url('https://sp.subaru.jp.internal', 'screenshot1.png')
     process()
