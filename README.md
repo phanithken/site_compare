@@ -24,3 +24,4 @@ after execution finish the program will generate an `output` folder in `os.path.
 │   │   │   ├── ...path.png (output after compare)
 │   │   ├── ...path.png (screenshots)
 ```
+and `result.txt` in `os.path.getcwd()` contain the similarity output of the both sites
