@@ -1,11 +1,24 @@
 from selenium import webdriver
 from PIL import Image
 from io import BytesIO
+from skimage.metrics import structural_similarity
+from logging import getLogger, StreamHandler, DEBUG
+
+import cv2
 import time
 import os
+import sys
 import argparse
 import shutil
+import imutils
 
+# logging
+logger = getLogger(__name__)
+handler = StreamHandler()
+handler.setLevel(DEBUG)
+handler.setLevel(DEBUG)
+logger.addHandler(handler)
+logger.propagate = False
 
 # parse arguments
 # first argument should be first site
@@ -64,6 +77,62 @@ def get_screenshot_from_url(URL, FILENAME):
         driver.quit()
 
 
+# take two image as input and output the result including red rectangle
+def compare_image(img1, img2):
+    image1 = cv2.imread(img1, 1)
+    image2 = cv2.imread(img2, 1)
+
+    height1, width1 = image1.shape[:2]
+    height2, width2 = image2.shape[:2]
+
+    height = min(height1, height2)
+    width = min(width1, width2)
+
+    # change to gray scale & align height/width
+    gray1 = cv2.cvtColor(image1[0:height, 0:width], cv2.COLOR_BGR2GRAY)
+    gray2 = cv2.cvtColor(image2[0:height, 0:width], cv2.COLOR_BGR2GRAY)
+
+    try:
+        # compare image
+        (score, diff) = structural_similarity(gray1, gray2, full=True, multichannel=True)
+        diff = (diff * 255).astype("uint8")
+
+    except ValueError as e:
+        logger.debug("ValueError: ({0})".format(e))
+        return 0
+    except:
+        logger.debug("Unexpected error")
+        return 0
+
+    # mark differences
+    threshold = cv2.threshold(diff, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+    cnts = cv2.findContours(threshold.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0]
+
+    for c in cnts:
+        (x, y, w, h) = cv2.boundingRect(c)
+        cv2.rectangle(image1, (x, y), (x + w, y + h), (0, 0, 255), 2)
+        cv2.rectangle(image2, (x, y), (x + w, y + h), (0, 0, 255), 2)
+
+    if score < 0:
+        percent = ((score * 100) / 2) - 50
+        logger.debug(img1 + ', ' + img2 + ', ' + "Similarity: {0}%".format(percent))
+
+    else:
+        percent = round(((score * 100) / 2) + 50, 2)
+        logger.debug(img1 + ', ' + img2 + ', ' + "Similarity: {0}%".format(percent))
+
+    # create output dir in both site folder
+    if not os.path.exists(os.path.join(os.path.dirname(img1), "output")): os.makedirs(os.path.join(os.path.dirname(img1), "output"))
+    if not os.path.exists(os.path.join(os.path.dirname(img2), "output")): os.makedirs(os.path.join(os.path.dirname(img2), "output"))
+
+    # write output to dir
+    print(os.path.basename(img1))
+    print(os.path.basename(img2))
+    cv2.imwrite(os.path.join(os.path.join(os.path.dirname(img1), "output"), os.path.basename(img1)), image1)
+    cv2.imwrite(os.path.join(os.path.join(os.path.dirname(img2), "output"), os.path.basename(img2)), image2)
+    cv2.waitKey(0)
+
 def process():
     # read path file
     path = args.arg1
@@ -75,8 +144,8 @@ def process():
     site2dir = os.path.join(output, site2)
 
     # delete old data
-    shutil.rmtree(site1dir)
-    shutil.rmtree(site2dir)
+    if os.path.exists(site1dir): shutil.rmtree(site1dir)
+    if os.path.exists(site2dir): shutil.rmtree(site2dir)
 
     # create output directory
     os.makedirs(site1dir)
@@ -88,8 +157,12 @@ def process():
         desire_path = x.replace("\n", "")
         filename = desire_path.replace("/", "_") + ".png"
 
+        # prepare screenshot for each path of the site
         get_screenshot_from_url("https://" + site1 + desire_path, os.path.join(site1dir, filename))
         get_screenshot_from_url("https://" + site2 + desire_path, os.path.join(site2dir, filename))
+
+        # generate comparision of the screenshot
+        compare_image(os.path.join(site1dir, filename), os.path.join(site2dir, filename))
 
 
 if __name__ == '__main__':
