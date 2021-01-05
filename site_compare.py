@@ -75,7 +75,12 @@ def get_screenshot_from_url(URL, FILENAME):
     with webdriver.Chrome(executable_path=os.path.join(os.getcwd(), 'chromedriver'), options=options) as driver:
         print("Processing screenshot: " + URL)
         driver.get(URL)
-        fullpage_screenshot(driver, FILENAME)
+        if "404" not in driver.title:
+            fullpage_screenshot(driver, FILENAME)
+            return True
+        else:
+            print("Not Found: " + URL)
+            return False
         driver.quit()
 
 
@@ -164,17 +169,18 @@ def process():
         filename = desire_path.replace("/", "_") + ".png"
 
         # prepare screenshot for each path of the site
-        get_screenshot_from_url("https://" + site1 + desire_path, os.path.join(site1dir, filename))
-        get_screenshot_from_url("https://" + site2 + desire_path, os.path.join(site2dir, filename))
+        confirm = get_screenshot_from_url("https://" + site1 + desire_path, os.path.join(site1dir, filename))
+        if confirm:
+            get_screenshot_from_url("https://" + site2 + desire_path, os.path.join(site2dir, filename))
 
-        # generate comparision of the screenshot
-        msg = compare_image(os.path.join(site1dir, filename), os.path.join(site2dir, filename))
+            # generate comparision of the screenshot
+            msg = compare_image(os.path.join(site1dir, filename), os.path.join(site2dir, filename))
 
-        # add similarity to result
-        result = os.path.basename("result.txt")
-        if not os.path.exists(result): open(result, "w")
-        append_to_file(result, msg)
-        print(msg)
+            # add similarity to result
+            result = os.path.basename("result.txt")
+            if not os.path.exists(result): open(result, "w")
+            append_to_file(result, msg)
+            print(msg)
 
 
 if __name__ == '__main__':
