@@ -26,6 +26,7 @@ logger.propagate = False
 # third argument should be path.txt, containing all path of the site
 parser = argparse.ArgumentParser(description='comparision between two sites')
 parser.add_argument('-p', '--arg1')
+parser.add_argument('-s', '--smartphone', action='store_true', help='smartphone mode')
 parser.add_argument('arg2', help='first site')
 parser.add_argument('arg3', help='second site')
 args = parser.parse_args()
@@ -69,7 +70,11 @@ def get_screenshot_from_url(URL, FILENAME):
     options = webdriver.ChromeOptions()
     mobile_emulation = {"deviceName": "iPhone X"}
     options.headless = True
-    options.add_experimental_option("mobileEmulation", mobile_emulation)
+    if args.smartphone:
+        options.add_experimental_option("mobileEmulation", mobile_emulation)
+        options.add_argument('window-size=375,812')
+    else:
+        options.add_argument('window-size=1920,1080')
     options.add_argument('--ignore-certificate-errors')
     options.add_argument("--test-type")
     with webdriver.Chrome(executable_path=os.path.join(os.getcwd(), 'chromedriver'), options=options) as driver:
