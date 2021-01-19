@@ -4,6 +4,7 @@ from io import BytesIO
 from skimage.metrics import structural_similarity
 from logging import getLogger, StreamHandler, DEBUG
 from utils import append_to_file
+from urllib.parse import urlparse
 
 import cv2
 import time
@@ -31,6 +32,8 @@ parser.add_argument('arg2', help='first site')
 parser.add_argument('arg3', help='second site')
 args = parser.parse_args()
 
+site1 = args.arg2
+site2 = args.arg3
 
 def fullpage_screenshot(driver, file, scroll_delay=0.3):
     device_pixel_ratio = driver.execute_script('return window.devicePixelRatio')
@@ -148,14 +151,17 @@ def compare_image(img1, img2):
     path1 = os.path.splitext(os.path.basename(img1))[0].replace("_", "/")
     path2 = os.path.splitext(os.path.basename(img2))[0].replace("_", "/")
 
-    # TO-DO: normalize
-    return "https://" + args.arg2 + path1 + ', ' "https://" + args.arg3 + path2 + ', ' + "Similarity: {0}%".format(percent)
+    return site1 + path1 + ", " + site2 + path2 + ', ' + "Similarity: {0}%".format(percent)
 
 def process():
     # read path file
     path = args.arg1
-    site1 = args.arg2
-    site2 = args.arg3
+    site1 = urlparse(args.arg2)
+    site2 = urlparse(args.arg3)
+
+    # parse site1 and site2
+    site1 = args.arg2 if site1.scheme else "https://" + args.arg2
+    site2 = args.arg3 if site2.scheme else "https://" + args.arg3
 
     output = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
     site1dir = os.path.join(output, site1)
@@ -176,8 +182,8 @@ def process():
         filename = desire_path.replace("/", "_") + ".png"
 
         # prepare screenshot for each path of the site
-        is_site1_screenshot = get_screenshot_from_url("https://" + site1 + desire_path, os.path.join(site1dir, filename))
-        is_site2_screenshot = get_screenshot_from_url("https://" + site2 + desire_path, os.path.join(site2dir, filename))
+        is_site1_screenshot = get_screenshot_from_url(site1 + desire_path, os.path.join(site1dir, filename))
+        is_site2_screenshot = get_screenshot_from_url(site2 + desire_path, os.path.join(site2dir, filename))
 
         if (is_site1_screenshot and is_site2_screenshot):
             # generate comparision of the screenshot
@@ -191,12 +197,12 @@ def process():
         else:
             err = os.path.basename("error.txt")
             if not is_site1_screenshot:
-                msg = "https://" + site1 + desire_path
+                msg = site1 + desire_path
                 print("error at: " + msg)
                 append_to_file(err, msg)
 
             if not is_site2_screenshot:
-                msg = "https://" + site2 + desire_path
+                msg = site2 + desire_path
                 print("error at: " + msg)
                 append_to_file(err, msg)
                 print()
