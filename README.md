@@ -27,3 +27,5 @@ after execution finish the program will generate an `output` folder in `os.path.
 │   │   ├── ...path.png (screenshots)
 ```
 and `result.txt` in `os.path.getcwd()` contain the similarity output of the both sites
+
+`error.txt` will be also generated. contain path that was error during the process such as 404, 403 ...etc
