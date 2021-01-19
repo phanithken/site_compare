@@ -131,3 +131,8 @@ dmypy.json
 
 # output folder
 /output
+
+# auto generated files
+error.txt
+path.txt
+result.txt
