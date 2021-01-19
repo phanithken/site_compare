@@ -1,5 +1,5 @@
 # site_compare
-little tiny piece of code to compare two site by determining the screenshot of each given path
+little tiny piece of code to compare two site by determining the screenshot of each given path using [structural_similarity](https://github.com/scikit-image/scikit-image/blob/master/skimage/metrics/_structural_similarity.py) from [scikit-image](https://scikit-image.org)
 
 # Usage
 
