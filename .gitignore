@@ -136,3 +136,6 @@ dmypy.json
 error.txt
 path.txt
 result.txt
+
+# chrome driver
+chromedriver
