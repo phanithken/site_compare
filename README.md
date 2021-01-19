@@ -11,6 +11,11 @@ download `chromedriver` from https://chromedriver.chromium.org/getting-started a
 $ python site_compare.py -p path.txt site-1.com site-2.com
 ```
 * `path.txt` contain all the available path of the given site
+```
+/
+/a
+/a/xyz
+```
 * `site-1.com` and `site-2.com` target site
 
 after execution finish the program will generate an `output` folder in `os.path.getcwd()`
