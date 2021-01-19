@@ -40,7 +40,9 @@ def fullpage_screenshot(driver, file, scroll_delay=0.3):
     total_width = driver.execute_script('return document.body.offsetWidth')
     viewport_width = driver.execute_script("return document.body.clientWidth")
 
-    assert(viewport_width == total_width)
+    # assert(viewport_width == total_width)
+    if (viewport_width != total_width):
+        return False
 
     # TO-DO: handle assert error, in case of 404 or anything sort of that
 
@@ -64,6 +66,7 @@ def fullpage_screenshot(driver, file, scroll_delay=0.3):
     for offset, image in slices.items():
         stitched_image.paste(image, (0, offset * device_pixel_ratio))
     stitched_image.save(file)
+    return True
 
 
 def get_screenshot_from_url(URL, FILENAME):
@@ -81,8 +84,7 @@ def get_screenshot_from_url(URL, FILENAME):
         print("Processing screenshot: " + URL)
         driver.get(URL)
         if "404" not in driver.title:
-            fullpage_screenshot(driver, FILENAME)
-            return True
+            return fullpage_screenshot(driver, FILENAME)
         else:
             print("Not Found: " + URL)
             return False
@@ -174,10 +176,10 @@ def process():
         filename = desire_path.replace("/", "_") + ".png"
 
         # prepare screenshot for each path of the site
-        confirm = get_screenshot_from_url("https://" + site1 + desire_path, os.path.join(site1dir, filename))
-        if confirm:
-            get_screenshot_from_url("https://" + site2 + desire_path, os.path.join(site2dir, filename))
+        is_site1_screenshot = get_screenshot_from_url("https://" + site1 + desire_path, os.path.join(site1dir, filename))
+        is_site2_screenshot = get_screenshot_from_url("https://" + site2 + desire_path, os.path.join(site2dir, filename))
 
+        if (is_site1_screenshot and is_site2_screenshot):
             # generate comparision of the screenshot
             msg = compare_image(os.path.join(site1dir, filename), os.path.join(site2dir, filename))
 
@@ -186,6 +188,18 @@ def process():
             if not os.path.exists(result): open(result, "w")
             append_to_file(result, msg)
             print(msg)
+        else:
+            err = os.path.basename("error.txt")
+            if not is_site1_screenshot:
+                msg = "https://" + site1 + desire_path
+                print("error at: " + msg)
+                append_to_file(err, msg)
+
+            if not is_site2_screenshot:
+                msg = "https://" + site2 + desire_path
+                print("error at: " + msg)
+                append_to_file(err, msg)
+                print()
 
 
 if __name__ == '__main__':
