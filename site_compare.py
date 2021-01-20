@@ -164,8 +164,8 @@ def process():
     site2 = args.arg3 if site2.scheme else "https://" + args.arg3
 
     output = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
-    site1dir = os.path.join(output, site1)
-    site2dir = os.path.join(output, site2)
+    site1dir = os.path.join(output, urlparse(site1).netloc)
+    site2dir = os.path.join(output, urlparse(site2).netloc)
 
     # delete old data
     if os.path.exists(site1dir): shutil.rmtree(site1dir)
