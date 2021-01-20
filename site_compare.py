@@ -83,15 +83,19 @@ def get_screenshot_from_url(URL, FILENAME):
         options.add_argument('window-size=1920,1080')
     options.add_argument('--ignore-certificate-errors')
     options.add_argument("--test-type")
-    with webdriver.Chrome(executable_path=os.path.join(os.getcwd(), 'chromedriver'), options=options) as driver:
-        print("Processing screenshot: " + URL)
-        driver.get(URL)
-        if "404" not in driver.title:
-            return fullpage_screenshot(driver, FILENAME)
-        else:
-            print("Not Found: " + URL)
-            return False
-        driver.quit()
+    try:
+        with webdriver.Chrome(executable_path=os.path.join(os.getcwd(), 'chromedriver'), options=options) as driver:
+            print("Processing screenshot: " + URL)
+            driver.get(URL)
+            if "404" not in driver.title:
+                return fullpage_screenshot(driver, FILENAME)
+            else:
+                print("Not Found: " + URL)
+                return False
+            driver.quit()
+    except:
+        return False
+        pass
 
 
 # take two image as input and output the result including red rectangle
