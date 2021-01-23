@@ -2,10 +2,9 @@
 Dockerized python script comparing two site by determining the screenshot of each given path using [structural_similarity](https://github.com/scikit-image/scikit-image/blob/master/skimage/metrics/_structural_similarity.py) from [scikit-image](https://scikit-image.org)
 
 # Usage
-
-download `chromedriver` from https://chromedriver.chromium.org/getting-started and place it in `os.path.getcwd()`
-
-`-s` to specify the smartphone mode
+## parameters
+* `-s` to specify the smartphone mode
+* `-p` path to your list of web pages
 
 ## Docker
 
