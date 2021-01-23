@@ -102,8 +102,6 @@ def get_screenshot_from_url(URL, FILENAME):
                 return False
             driver.quit()
     except Exception as e:
-        print("site got error ")
-        print(e)
         return False
         pass
 
