@@ -5,6 +5,7 @@ from skimage.metrics import structural_similarity
 from logging import getLogger, StreamHandler, DEBUG
 from utils import append_to_file
 from urllib.parse import urlparse
+from dotenv import load_dotenv
 
 import cv2
 import time
@@ -12,6 +13,10 @@ import os
 import sys
 import argparse
 import shutil
+
+# load env
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+load_dotenv(dotenv_path)
 
 # logging
 logger = getLogger(__name__)
@@ -83,8 +88,11 @@ def get_screenshot_from_url(URL, FILENAME):
         options.add_argument('window-size=1920,1080')
     options.add_argument('--ignore-certificate-errors')
     options.add_argument("--test-type")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
     try:
-        with webdriver.Chrome(executable_path=os.path.join(os.getcwd(), 'chromedriver'), options=options) as driver:
+        chromedriver_path = os.path.join(os.environ.get("CHROMEDRIVER_DIR"), 'chromedriver')
+        with webdriver.Chrome(executable_path=os.path.join(os.getcwd(), chromedriver_path), options=options) as driver:
             print("Processing screenshot: " + URL)
             driver.get(URL)
             if "404" not in driver.title:
@@ -93,7 +101,9 @@ def get_screenshot_from_url(URL, FILENAME):
                 print("Not Found: " + URL)
                 return False
             driver.quit()
-    except:
+    except Exception as e:
+        print("site got error ")
+        print(e)
         return False
         pass
 

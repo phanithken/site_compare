@@ -2,10 +2,19 @@ version: "3.8"
 services:
   app:
     restart: always
-    build: .
-    container_name: 'site_compare_app'
+    build:
+      dockerfile: Dockerfile
+      context: ./
+      args:
+        CHROMEDRIVER_DIR: ${CHROMEDRIVER_DIR}
+        CHROMEDRIVER_VERSION: ${CHROMEDRIVER_VERSION}
     working_dir: '/code'
     stdin_open: true
     tty: true
     volumes:
-      - ./data:/home/app_user/data
+      - ./:/code
+    networks:
+      - site_compare
+networks:
+  site_compare:
+    driver: bridge

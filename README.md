@@ -1,5 +1,5 @@
 # site_compare
-little tiny piece of code to compare two site by determining the screenshot of each given path using [structural_similarity](https://github.com/scikit-image/scikit-image/blob/master/skimage/metrics/_structural_similarity.py) from [scikit-image](https://scikit-image.org)
+Dockerized python script comparing two site by determining the screenshot of each given path using [structural_similarity](https://github.com/scikit-image/scikit-image/blob/master/skimage/metrics/_structural_similarity.py) from [scikit-image](https://scikit-image.org)
 
 # Usage
 
@@ -7,9 +7,33 @@ download `chromedriver` from https://chromedriver.chromium.org/getting-started a
 
 `-s` to specify the smartphone mode
 
-```bash
-$ python site_compare.py -p path.txt site-1.com site-2.com
+## Docker
+
+### start docker container
+
+`-d` **Detached mode** (optional): Run containers in the background
+```console
+$ docker-compose up -d
 ```
+
+```bash
+$ python3 site_compare.py -p path.txt site-1.com site-2.com
+```
+
+### run directly from host
+```console
+$ docker-compose exec app python3 site_compare.py -p path.txt site-1.com site-2.com
+```
+
+## Environment variable
+Create `.env` file in project root directory
+```
+# path for chromedriver to be downloaded
+CHROMEDRIVER_DIR=/chromedriver
+```
+
+# Output
+
 * `path.txt` contain all the available path of the given site
 ```
 /
