@@ -1,14 +1,13 @@
-FROM python:3.8-slim
+FROM python:3.8-slim-buster
 
-RUN useradd --create-home --shell /bin/bash app_user
+WORKDIR /code
 
-WORKDIR /home/app_user
+COPY requirements.txt .
 
-COPY requirements.txt ./
+RUN apt-get update
+RUN apt-get install ffmpeg libsm6 libxext6  -y
 
 RUN pip install --no-cache-dir -r requirements.txt
-
-USER app_user
 
 COPY . .
 
