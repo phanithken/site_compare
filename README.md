@@ -1,6 +1,8 @@
 # site_compare
 Dockerized python script comparing two site by determining the screenshot of each given path using [structural_similarity](https://github.com/scikit-image/scikit-image/blob/master/skimage/metrics/_structural_similarity.py) from [scikit-image](https://scikit-image.org)
 
+Multi-arch support arm64, amd64, x86_64
+
 # Usage
 ## parameters
 * `-s` to specify the smartphone mode

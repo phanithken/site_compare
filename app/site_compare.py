@@ -3,9 +3,8 @@ from PIL import Image
 from io import BytesIO
 from skimage.metrics import structural_similarity
 from logging import getLogger, StreamHandler, DEBUG
-from utils import append_to_file
+from helpers.utils import append_to_file
 from urllib.parse import urlparse
-from dotenv import load_dotenv
 
 import cv2
 import time
@@ -13,10 +12,6 @@ import os
 import sys
 import argparse
 import shutil
-
-# load env
-dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
-load_dotenv(dotenv_path)
 
 # logging
 logger = getLogger(__name__)
@@ -74,6 +69,8 @@ def fullpage_screenshot(driver, file, scroll_delay=0.3):
     for offset, image in slices.items():
         stitched_image.paste(image, (0, offset * device_pixel_ratio))
     stitched_image.save(file)
+
+    driver.quit()
     return True
 
 
@@ -91,7 +88,7 @@ def get_screenshot_from_url(URL, FILENAME):
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     try:
-        chromedriver_path = os.path.join(os.environ.get("CHROMEDRIVER_DIR"), 'chromedriver')
+        chromedriver_path = os.path.join("/usr/bin/chromedriver")
         with webdriver.Chrome(executable_path=os.path.join(os.getcwd(), chromedriver_path), options=options) as driver:
             print("Processing screenshot: " + URL)
             driver.get(URL)
@@ -99,9 +96,10 @@ def get_screenshot_from_url(URL, FILENAME):
                 return fullpage_screenshot(driver, FILENAME)
             else:
                 print("Not Found: " + URL)
+                driver.quit()
                 return False
-            driver.quit()
     except Exception as e:
+        print(e)
         return False
         pass
 
@@ -152,12 +150,14 @@ def compare_image(img1, img2):
         logger.debug(img1 + ', ' + img2 + ', ' + "Similarity: {0}%".format(percent))
 
     # create output dir in both site folder
-    if not os.path.exists(os.path.join(os.path.dirname(img1), "output")): os.makedirs(os.path.join(os.path.dirname(img1), "output"))
-    if not os.path.exists(os.path.join(os.path.dirname(img2), "output")): os.makedirs(os.path.join(os.path.dirname(img2), "output"))
+    if not os.path.exists(os.path.join(os.path.dirname(img1),
+                                       "../output")): os.makedirs(os.path.join(os.path.dirname(img1), "../output"))
+    if not os.path.exists(os.path.join(os.path.dirname(img2),
+                                       "../output")): os.makedirs(os.path.join(os.path.dirname(img2), "../output"))
 
     # write output to dir
-    cv2.imwrite(os.path.join(os.path.join(os.path.dirname(img1), "output"), os.path.basename(img1)), image1)
-    cv2.imwrite(os.path.join(os.path.join(os.path.dirname(img2), "output"), os.path.basename(img2)), image2)
+    cv2.imwrite(os.path.join(os.path.join(os.path.dirname(img1), "../output"), os.path.basename(img1)), image1)
+    cv2.imwrite(os.path.join(os.path.join(os.path.dirname(img2), "../output"), os.path.basename(img2)), image2)
     cv2.waitKey(0)
 
     path1 = os.path.splitext(os.path.basename(img1))[0].replace("_", "/")
@@ -175,7 +175,7 @@ def process():
     site1 = args.arg2 if site1.scheme else "https://" + args.arg2
     site2 = args.arg3 if site2.scheme else "https://" + args.arg3
 
-    output = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
+    output = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../output")
     site1dir = os.path.join(output, urlparse(site1).netloc)
     site2dir = os.path.join(output, urlparse(site2).netloc)
 
@@ -202,12 +202,12 @@ def process():
             msg = compare_image(os.path.join(site1dir, filename), os.path.join(site2dir, filename))
 
             # add similarity to result
-            result = os.path.basename("result.txt")
+            result = os.path.basename("../result.txt")
             if not os.path.exists(result): open(result, "w")
             append_to_file(result, msg)
             print(msg)
         else:
-            err = os.path.basename("error.txt")
+            err = os.path.basename("../error.txt")
             if not is_site1_screenshot:
                 msg = site1 + desire_path
                 print("error at: " + msg)

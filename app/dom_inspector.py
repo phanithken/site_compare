@@ -4,7 +4,7 @@ import argparse
 from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
-from utils import append_to_file
+from helpers import append_to_file
 
 # parse arguments
 parser = argparse.ArgumentParser(description='inspect pages contain an id')
@@ -37,14 +37,14 @@ def process():
             r = requests.get(url)
             res = find_target_id(r.text, target_id)
             if res is None:
-                err = os.path.basename("error.txt")
+                err = os.path.basename("../error.txt")
                 append_to_file(err, url)
             else:
-                result = os.path.basename("result.txt")
+                result = os.path.basename("../result.txt")
                 append_to_file(result, url)
                 print(url)
         except:
-            err = os.path.basename("error.txt")
+            err = os.path.basename("../error.txt")
             append_to_file(err, url)
 
 

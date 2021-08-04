@@ -26,6 +26,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+.DS_Store
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -130,12 +131,15 @@ dmypy.json
 .idea
 
 # output folder
-/output
+/output*
 
 # auto generated files
-error.txt
-path.txt
-result.txt
+error*.txt
+path*.txt
+result*.txt
 
 # chrome driver
 chromedriver
+
+# auto generated result
+/dist
