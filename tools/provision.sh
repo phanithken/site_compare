@@ -28,12 +28,23 @@ set -Eeu
 trap 'catch ${LINENO[0]} ${FUNCNAME[1]}' ERR
 trap finally EXIT
 
+# info log
 function log_info() {
   echo "[INFO] $@"
 }
 
-function install_chromium {
+# install required dependencies for running chromium on debian
+function install_deps {
     for package in $(cat /root/deps.txt); do
-      echo package
+      platform_package=$(echo "$package" | sed "s/{ARCH}/$PLATFORM/")
+      deb_name=$(echo "${platform_package##*/}")
+
+      wget "$platform_package"
+      dpkg -i "$deb_name" && rm "$deb_name"
     done
+
+    echo "Required Dependencies installed."
 }
+
+log_info Installing deps...
+install_deps
