@@ -21,9 +21,6 @@ handler.setLevel(DEBUG)
 logger.addHandler(handler)
 logger.propagate = False
 
-# permission for os.makedir
-makedir_permission = 0o777
-
 # parse arguments
 # first argument should be first site
 # second argument should be second site
@@ -154,9 +151,9 @@ def compare_image(img1, img2):
 
     # create output dir in both site folder
     if not os.path.exists(os.path.join(os.path.dirname(img1),
-                                       "../output")): os.makedirs(os.path.join(os.path.dirname(img1), "../output"), makedir_permission)
+                                       "../output")): os.makedirs(os.path.join(os.path.dirname(img1), "../output"))
     if not os.path.exists(os.path.join(os.path.dirname(img2),
-                                       "../output")): os.makedirs(os.path.join(os.path.dirname(img2), "../output"), makedir_permission)
+                                       "../output")): os.makedirs(os.path.join(os.path.dirname(img2), "../output"))
 
     # write output to dir
     cv2.imwrite(os.path.join(os.path.join(os.path.dirname(img1), "../output"), os.path.basename(img1)), image1)
@@ -187,8 +184,8 @@ def process():
     if os.path.exists(site2dir): shutil.rmtree(site2dir)
 
     # create output directory
-    os.makedirs(site1dir, makedir_permission)
-    os.makedirs(site2dir, makedir_permission)
+    os.makedirs(site1dir)
+    os.makedirs(site2dir)
 
     lines = tuple(open(path, "r"))
 
