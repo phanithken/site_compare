@@ -5,6 +5,7 @@ from skimage.metrics import structural_similarity
 from logging import getLogger, StreamHandler, DEBUG
 from helpers.utils import append_to_file
 from urllib.parse import urlparse
+from contribs.stop_watch import stop_watch
 
 import cv2
 import time
@@ -74,6 +75,7 @@ def fullpage_screenshot(driver, file, scroll_delay=0.3):
     return True
 
 
+@stop_watch
 def get_screenshot_from_url(URL, FILENAME):
     options = webdriver.ChromeOptions()
     mobile_emulation = {"deviceName": "iPhone X"}
@@ -105,6 +107,7 @@ def get_screenshot_from_url(URL, FILENAME):
 
 
 # take two image as input and output the result including red rectangle
+@stop_watch
 def compare_image(img1, img2):
     image1 = cv2.imread(img1, 1)
     image2 = cv2.imread(img2, 1)
