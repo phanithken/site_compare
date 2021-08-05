@@ -3,16 +3,18 @@ services:
   app:
     restart: always
     build:
-      dockerfile: Dockerfile
-      context: ./
+      context: .
+      dockerfile: tools/Dockerfile
       args:
-        CHROMEDRIVER_DIR: ${CHROMEDRIVER_DIR}
-        CHROMEDRIVER_VERSION: ${CHROMEDRIVER_VERSION}
-    working_dir: '/code'
-    stdin_open: true
+        APP_DIR: /var/www/app
+        PROCUSER: www-data
+        PROCUID: $APP_PROCUID
+        PROCGID: $APP_PROCGID
+        PLATFORM: $DOCKER_PLATFORM
+    platform: linux/${DOCKER_PLATFORM}
     tty: true
     volumes:
-      - ./:/code
+      - ./app/:/var/www/app
     networks:
       - site_compare
 networks:

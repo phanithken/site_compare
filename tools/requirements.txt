@@ -1,0 +1,5 @@
+selenium
+scikit-image
+opencv-python
+Pillow
+beautifulsoup4
