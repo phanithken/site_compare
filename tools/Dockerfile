@@ -21,7 +21,7 @@ RUN apt-get install curl git dos2unix -y
 RUN apt-get install ffmpeg libsm6 libxext6  -y
 
 # dealing with unix line endings
-RUN if [ "$PLATFORM" != "arm64" ]; then dos2unix system-validation.sh; fi && \
+RUN if [ "$PLATFORM" != "arm64" ]; then dos2unix /root/system-validation.sh; fi && \
     chmod +x /root/system-validation.sh && \
     /root/system-validation.sh
 
